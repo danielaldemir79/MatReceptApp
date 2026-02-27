@@ -16,6 +16,11 @@ namespace MatReceptAPI.Services
             throw new NotImplementedException();
         }
 
+        public Task<bool> DeleteAsync(int id)
+        {
+            throw new NotImplementedException();
+        }
+
         public Task<IEnumerable<RecipeResponseDto>> GetAllAsync()
         {
             throw new NotImplementedException();
