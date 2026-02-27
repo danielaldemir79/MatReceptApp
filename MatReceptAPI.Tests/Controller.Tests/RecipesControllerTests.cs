@@ -1,50 +1,80 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Text;
+﻿using Microsoft.AspNetCore.Mvc;
+using Moq;
+using MatReceptAPI.Controllers;
+using MatReceptAPI.Services;
+using MatReceptAPI.Models.DTOs;
 
-namespace MatReceptAPI.Tests.Controller.Tests
+namespace MatReceptAPI.Tests.ControllerTests;
+
+public class RecipesControllerTests
 {
-    internal class RecipesControllerTests
+    private readonly Mock<IRecipeService> _mockService;
+    private readonly RecipesController _controller;
+
+    public RecipesControllerTests()
     {
-        [Fact]
-        public async task GetAll_Returns200OK()
+        _mockService = new Mock<IRecipeService>();
+        _controller = new RecipesController(_mockService.Object);
+    }
+
+    // TEST 1: GetAll returnerar 200 OK
+    [Fact]
+    public async Task GetAll_Returns200OK()
+    {
+        // Arrange
+        var fakeRecipes = new List<RecipeResponseDto>
         {
-            // Arrange
-            var mockService = new Mock<IRecipeService>();
-            var fakeRecipes = new List<RecipeResponseDto>
-            {
-                new Recipe { Id = 1, Name = "Pasta" },
-                new Recipe { Id = 2, Name = "Pizza" }
-            };
-            
-            // Act
-            var result = await controller.GetAll();
+            new RecipeResponseDto { Id = 1, Name = "Pasta" },
+            new RecipeResponseDto { Id = 2, Name = "Pizza" }
+        };
+        _mockService.Setup(s => s.GetAllAsync()).ReturnsAsync(fakeRecipes);
 
-            // Assert
-            var okResult = Assert.IsType<OkObjectResult>(result.Result);
-            Assert.Equal(200,okResult.Value);
-        }
-        [Fact]
-        public async task GetById_NonExisting_Returns404()
+        // Act
+        var result = await _controller.GetAll();
+
+        // Assert
+        var okResult = Assert.IsType<OkObjectResult>(result.Result);
+        Assert.Equal(200, okResult.StatusCode);
+    }
+
+    // TEST 2: GetById med ogiltigt id returnerar 404
+    [Fact]
+    public async Task GetById_NonExisting_Returns404()
+    {
+        // Arrange
+        _mockService.Setup(s => s.GetByIdAsync(999)).ReturnsAsync((RecipeResponseDto?)null);
+
+        // Act
+        var result = await _controller.GetRecipeById(999);
+
+        // Assert
+        Assert.IsType<NotFoundResult>(result.Result);
+    }
+
+    // TEST 3: Create returnerar 201 Created
+    [Fact]
+    public async Task Create_ValidDto_Returns201Created()
+    {
+        // Arrange
+        var createDto = new CreateRecipeDto
         {
-            // Arrange
-            var mockService = new Mock<IRecipeService>();
-            mockService.Setup(s => s.GetByIdAsync(999)).ReturnsAsync((RecipeResponseDto?)null);  // null = finns ej
-            
-            var controller = new RecipesController(mockService.Object);
+            Name = "Test Recipe",
+            Description = "Test",
+            PrepTimeMinutes = 10,
+            CookTimeMinutes = 20,
+            Servings = 4,
+            Difficulty = "Easy",
+            Ingredients = new List<CreateIngredientDto>(),
+            Instructions = new List<string> { "Step 1" }
+        };
+        var createdRecipe = new RecipeResponseDto { Id = 1, Name = "Test Recipe" };
+        _mockService.Setup(s => s.CreateAsync(It.IsAny<CreateRecipeDto>())).ReturnsAsync(createdRecipe);
 
-            // Act
-            var result = await controller.GetById(999);
+        // Act
+        var result = await _controller.Create(createDto);
 
-            // Assert
-            Assert.IsType<NotFoundResult>(result.Result);
-
-
-
-
-
-
-        }
-
+        // Assert
+        var createdResult = Assert.IsType<CreatedAtActionResult>(result.Result);
+        Assert.Equal(201, createdResult.StatusCode);
     }
 }

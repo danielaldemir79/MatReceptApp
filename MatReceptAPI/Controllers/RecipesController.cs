@@ -45,7 +45,7 @@ public class RecipesController : ControllerBase
         return CreatedAtAction(nameof(GetRecipeById), new { id = recipe.Id }, recipe);
     }
     [HttpPut("{id}")] // PUT api/recipes/{id}
-    public async Task<ActionResult<RecipeResponseDto>> Update(int id, UpdateRecipeDto dto)
+    public async Task<ActionResult<RecipeResponseDto>> Update(int id, CreateRecipeDto dto)
     {
         var updatedRecipe = await _recipeService.UpdateAsync(id, dto);
         if (updatedRecipe == null)
@@ -63,5 +63,11 @@ public class RecipesController : ControllerBase
             return NotFound();
         }
         return NoContent();
+    }
+    [HttpGet]
+    public async Task<ActionResult<IEnumerable<RecipeResponseDto>>> GetAll()
+    {
+        var recipes = await _recipeService.GetAllAsync();
+        return Ok(recipes);
     }
 }
