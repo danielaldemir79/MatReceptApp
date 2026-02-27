@@ -1,0 +1,6 @@
+@MatReceptAPI_HostAddress = http://localhost:5064
+
+GET {{MatReceptAPI_HostAddress}}/weatherforecast/
+Accept: application/json
+
+###

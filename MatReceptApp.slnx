@@ -1,0 +1,4 @@
+<Solution>
+  <Project Path="MatReceptAPI.Tests/MatReceptAPI.Tests.csproj" />
+  <Project Path="MatReceptAPI/MatReceptAPI.csproj" />
+</Solution>
