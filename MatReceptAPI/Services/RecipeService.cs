@@ -62,7 +62,7 @@ namespace MatReceptAPI.Services
             return result.Select(MapToResponseDto).ToList();
         }
 
-        public async Task<RecipeResponseDto?> UpdateAsync(int id, CreateRecipeDto dto)
+        public async Task<RecipeResponseDto?> UpdateAsync(int id, UpdateRecipeDto dto)
         {
             Validate(dto);
 

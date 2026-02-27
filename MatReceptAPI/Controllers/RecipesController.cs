@@ -45,7 +45,7 @@ public class RecipesController : ControllerBase
         return CreatedAtAction(nameof(GetRecipeById), new { id = recipe.Id }, recipe);
     }
     [HttpPut("{id}")] // PUT api/recipes/{id}
-    public async Task<ActionResult<RecipeResponseDto>> Update(int id, CreateRecipeDto dto)
+    public async Task<ActionResult<RecipeResponseDto>> Update(int id, UpdateRecipeDto dto)
     {
         var updatedRecipe = await _recipeService.UpdateAsync(id, dto);
         if (updatedRecipe == null)

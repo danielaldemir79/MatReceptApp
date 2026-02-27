@@ -79,4 +79,21 @@ public class ServiceHelpers
     // kolla difficulty via NormalizeDifficulty (kastar om fel)
     _ = NormalizeDifficulty(dto.Difficulty);
   }
-}  
+
+  public static void Validate(UpdateRecipeDto dto)
+  {
+    if (dto is null)
+      throw new ArgumentNullException(nameof(dto));
+
+    if (string.IsNullOrWhiteSpace(dto.Name) || dto.Name.Trim().Length < 3)
+      throw new ArgumentException("Name must be at least 3 characters.");
+
+    if (dto.Ingredients is null || dto.Ingredients.Count < 1)
+      throw new ArgumentException("At least one ingredient is required.");
+
+    if (dto.Instructions is null || dto.Instructions.Count < 1)
+      throw new ArgumentException("At least one instruction is required.");
+
+    _ = NormalizeDifficulty(dto.Difficulty);
+  }
+}

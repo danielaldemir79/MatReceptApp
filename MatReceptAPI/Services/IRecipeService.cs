@@ -9,8 +9,6 @@ public interface IRecipeService
     Task<IEnumerable<RecipeResponseDto>> SearchAsync(string term);
     Task<IEnumerable<RecipeResponseDto>> GetByDifficultyAsync(string level);
     Task<RecipeResponseDto> CreateAsync(CreateRecipeDto dto);
-    Task<RecipeResponseDto?> UpdateAsync(int id, CreateRecipeDto dto);
-
+    Task<RecipeResponseDto?> UpdateAsync(int id, UpdateRecipeDto dto);
     Task<bool> DeleteAsync(int id);
-
 }
