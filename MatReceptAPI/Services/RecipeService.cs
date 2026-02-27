@@ -17,26 +17,28 @@ namespace MatReceptAPI.Services
         {
             Validate(dto);
             var recipe = MapToModel(dto);
-            recipe.Created = DateTime.UtcNow;
+            recipe.CreatedAt = DateTime.UtcNow;
 
             var created = await _repository.AddAsync(recipe);
             return MapToResponseDto(created);
         }
 
-        public Task<bool> DeleteAsync(int id)
+        public async Task<bool> DeleteAsync(int id)
         {
-            throw new NotImplementedException();
+            return await _repository.DeleteAsync(id);
         }
 
-        public Task<IEnumerable<RecipeResponseDto>> GetAllAsync()
+        public async Task<IEnumerable<RecipeResponseDto>> GetAllAsync()
         {
             var recipes = await _repository.GetAllAsync();
             return recipes.Select(MapToResponseDto).ToList();
         }
 
-        public Task<IEnumerable<RecipeResponseDto>> GetByDifficultyAsync(string level)
+        public async Task<IEnumerable<RecipeResponseDto>> GetByDifficultyAsync(string level)
         {
-            throw new NotImplementedException();
+            var normalized = NormalizeDifficulty(level);
+            var results = await _repository.GetByDifficultyAsync(normalized);
+            return results.Select(MapToResponseDto).ToList();
         }
 
         public async Task<RecipeResponseDto?> GetByIdAsync(int id)
@@ -74,14 +76,18 @@ namespace MatReceptAPI.Services
             existing.CookTimeMinutes = dto.CookTimeMinutes;
             existing.Servings = dto.Servings;
             existing.Difficulty = NormalizeDifficulty(dto.Difficulty);
+
+            existing.Ingredients = dto.Ingredients.Select(i => new Ingredient
+            {
+                Name = i.Name.Trim(),
+                Quantity = i.Quantity,
+                Unit = i.Unit.Trim()
+            }).ToList();
+
+            existing.Instructions = dto.Instructions.Select(s => s.Trim()).ToList();
+
+            var updated = await _repository.UpdateAsync(existing);
+            return MapToResponseDto(updated!);
         }
-
-        public Task<bool> DeleteAsync(int id)
-        {
-            throw new NotImplementedException();
-        }
-
-    }
-
-    
+    } 
 }
