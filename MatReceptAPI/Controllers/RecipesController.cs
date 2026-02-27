@@ -42,7 +42,7 @@ public class RecipesController : ControllerBase
         var recipe = await _recipeService.CreateAsync(dto);
 
         // 201 Created + Location-header som pekar till det nya receptet
-        return CreatedAtAction(nameof(GetById), new { id = recipe.Id }, recipe);
+        return CreatedAtAction(nameof(GetRecipeById), new { id = recipe.Id }, recipe);
     }
     [HttpPut("{id}")] // PUT api/recipes/{id}
     public async Task<ActionResult<RecipeResponseDto>> Update(int id, UpdateRecipeDto dto)
