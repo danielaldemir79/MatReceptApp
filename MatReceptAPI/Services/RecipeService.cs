@@ -23,7 +23,12 @@ namespace MatReceptAPI.Services
             return MapToResponseDto(created);
         }
 
-        public async Task<IEnumerable<RecipeResponseDto>> GetAllAsync()
+        public Task<bool> DeleteAsync(int id)
+        {
+            throw new NotImplementedException();
+        }
+
+        public Task<IEnumerable<RecipeResponseDto>> GetAllAsync()
         {
             var recipes = await _repository.GetAllAsync();
             return recipes.Select(MapToResponseDto).ToList();
