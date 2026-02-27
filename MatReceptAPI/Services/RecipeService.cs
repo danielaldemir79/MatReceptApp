@@ -1,5 +1,7 @@
-﻿using MatReceptAPI.Models.DTOs;
+﻿using MatReceptAPI.Models;
+using MatReceptAPI.Models.DTOs;
 using MatReceptAPI.Repositories;
+using static MatReceptAPI.Services.ServiceHelpers;
 
 namespace MatReceptAPI.Services
 {
@@ -11,34 +13,81 @@ namespace MatReceptAPI.Services
         {
             _repository = repository;
         }
-        public Task<RecipeResponseDto> CreateAsync(CreateRecipeDto dto)
+        public async Task<RecipeResponseDto> CreateAsync(CreateRecipeDto dto)
         {
-            throw new NotImplementedException();
+            Validate(dto);
+            var recipe = MapToModel(dto);
+            recipe.CreatedAt = DateTime.UtcNow;
+
+            var created = await _repository.AddAsync(recipe);
+            return MapToResponseDto(created);
         }
 
-        public Task<IEnumerable<RecipeResponseDto>> GetAllAsync()
+        public async Task<bool> DeleteAsync(int id)
         {
-            throw new NotImplementedException();
+            return await _repository.DeleteAsync(id);
         }
 
-        public Task<IEnumerable<RecipeResponseDto>> GetByDifficultyAsync(string level)
+        public async Task<IEnumerable<RecipeResponseDto>> GetAllAsync()
         {
-            throw new NotImplementedException();
+            var recipes = await _repository.GetAllAsync();
+            return recipes.Select(MapToResponseDto).ToList();
         }
 
-        public Task<RecipeResponseDto?> GetByIdAsync(int id)
+        public async Task<IEnumerable<RecipeResponseDto>> GetByDifficultyAsync(string level)
         {
-            throw new NotImplementedException();
+            var normalized = NormalizeDifficulty(level);
+            var results = await _repository.GetByDifficultyAsync(normalized);
+            return results.Select(MapToResponseDto).ToList();
         }
 
-        public Task<IEnumerable<RecipeResponseDto>> SearchAsync(string term)
+        public async Task<RecipeResponseDto?> GetByIdAsync(int id)
         {
-            throw new NotImplementedException();
+            var recipe = await _repository.GetByIdAsync(id);
+            return recipe is null ? null : MapToResponseDto(recipe);
         }
 
-        public Task<RecipeResponseDto?> UpdateAsync(int id, CreateRecipeDto dto)
+        public async Task<IEnumerable<RecipeResponseDto>> SearchAsync(string term)
         {
-            throw new NotImplementedException();
+            term ??= "";
+            term = term.Trim();
+
+            if (term.Length == 0)
+            {
+                var all = await _repository.GetAllAsync();
+                return all.Select(MapToResponseDto).ToList();
+            }
+
+            var result = await _repository.SearchAsync(term);
+            return result.Select(MapToResponseDto).ToList();
         }
-    }
+
+        public async Task<RecipeResponseDto?> UpdateAsync(int id, CreateRecipeDto dto)
+        {
+            Validate(dto);
+
+            var existing = await _repository.GetByIdAsync(id);
+            if (existing is null)
+                return null;
+
+            existing.Name = dto.Name.Trim();
+            existing.Description = dto.Description.Trim() ?? "";
+            existing.PrepTimeMinutes = dto.PrepTimeMinutes;
+            existing.CookTimeMinutes = dto.CookTimeMinutes;
+            existing.Servings = dto.Servings;
+            existing.Difficulty = NormalizeDifficulty(dto.Difficulty);
+
+            existing.Ingredients = dto.Ingredients.Select(i => new Ingredient
+            {
+                Name = i.Name.Trim(),
+                Quantity = i.Quantity,
+                Unit = i.Unit.Trim()
+            }).ToList();
+
+            existing.Instructions = dto.Instructions.Select(s => s.Trim()).ToList();
+
+            var updated = await _repository.UpdateAsync(existing);
+            return MapToResponseDto(updated!);
+        }
+    } 
 }
